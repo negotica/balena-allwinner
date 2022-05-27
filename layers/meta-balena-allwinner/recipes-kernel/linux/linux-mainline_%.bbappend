@@ -123,3 +123,7 @@ KERNEL_DEVICETREE_orange-pi-zero_append = " \
     overlay/sun8i-h3-usbhost3.dtbo \
     overlay/sun8i-h3-w1-gpio.dtbo \
     "
+
+SRC_URI_append_olimex-a20-negotica = " \
+    file://a20-negotica.patch \
+"

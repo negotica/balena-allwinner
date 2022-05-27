@@ -12,3 +12,7 @@ SRC_URI_append = " \
 		file://resin-specific-env-integration-kconfig_reworked.patch \
 		file://0002-Change_CONFIG_SYS_BOOTM_LEN_to_64M.patch \
 		"
+
+SRC_URI_append_olimex-a20-negotica = " \
+    file://a20-negotica.patch \
+"

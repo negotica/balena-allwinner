@@ -149,3 +149,22 @@ IMAGE_CMD_balenaos-img_append_nanopi-neo-air () {
     # nanopi-neo-air needs uboot written at a specific location
     dd if=${DEPLOY_DIR_IMAGE}/u-boot-sunxi-with-spl.bin of=${BALENA_RAW_IMG} conv=notrunc seek=8 bs=1024
 }
+
+
+#
+# Olimex A20 Negotica
+#
+
+IMAGE_FSTYPES_append_olimex-a20-negotica = " balenaos-img"
+
+# Customize balenaos-img
+BALENA_IMAGE_BOOTLOADER_olimex-a20-negotica = "u-boot"
+BALENA_BOOT_PARTITION_FILES_olimex-a20-negotica = " \
+    ${KERNEL_IMAGETYPE}${KERNEL_INITRAMFS}-${MACHINE}.bin:/${KERNEL_IMAGETYPE} \
+    sun7i-a20-olimex-som-negotica.dtb:/dtb/sun7i-a20-olimex-som-negotica.dtb \
+    u-boot-sunxi-with-spl.bin: \
+"
+IMAGE_CMD_balenaos-img_append_olimex-a20-negotica () {
+    # Olimex A20 needs uboot written at a specific location
+    dd if=${DEPLOY_DIR_IMAGE}/u-boot-sunxi-with-spl.bin of=${BALENA_RAW_IMG} conv=notrunc seek=8 bs=1024
+}

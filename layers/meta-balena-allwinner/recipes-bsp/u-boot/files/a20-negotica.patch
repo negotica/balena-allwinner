@@ -1,0 +1,319 @@
+diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
+index 0127a91a82..28416d621d 100644
+--- a/arch/arm/dts/Makefile
++++ b/arch/arm/dts/Makefile
+@@ -469,6 +469,7 @@ dtb-$(CONFIG_MACH_SUN7I) += \
+ 	sun7i-a20-m5.dtb \
+ 	sun7i-a20-mk808c.dtb \
+ 	sun7i-a20-olimex-som-evb.dtb \
++	sun7i-a20-olimex-som-negotica.dtb \
+ 	sun7i-a20-olimex-som204-evb.dtb \
+ 	sun7i-a20-olimex-som204-evb-emmc.dtb \
+ 	sun7i-a20-olinuxino-lime.dtb \
+diff --git a/arch/arm/dts/sun7i-a20-olimex-som-negotica.dts b/arch/arm/dts/sun7i-a20-olimex-som-negotica.dts
+new file mode 100644
+index 0000000000..7d97a82964
+--- /dev/null
++++ b/arch/arm/dts/sun7i-a20-olimex-som-negotica.dts
+@@ -0,0 +1,267 @@
++/dts-v1/;
++#include "sun7i-a20.dtsi"
++#include "sunxi-common-regulators.dtsi"
++
++#include <dt-bindings/gpio/gpio.h>
++#include <dt-bindings/input/input.h>
++#include <dt-bindings/interrupt-controller/irq.h>
++
++/ {
++	model = "Olimex A20-Olimex-SOM Negotica";
++	compatible = "olimex,a20-olimex-som", "allwinner,sun7i-a20";
++
++	aliases {
++		serial0 = &uart0;
++	};
++
++	chosen {
++		stdout-path = "serial0:115200n8";
++	};
++
++	led2 {
++		compatible = "gpio-leds";
++		pinctrl-names = "default";
++		pinctrl-0 = <&led_pins_olimex_som>;
++
++		sys {
++			label = "a20-olimex-som:sys:usr";
++			gpios = <&pio 7 2 GPIO_ACTIVE_HIGH>;
++			default-state = "off";
++			linux,default-trigger = "heartbeat";
++		};
++
++		green {
++			label = "a20-olimex-som:green:usr";
++			gpios = <&pio 7 23 GPIO_ACTIVE_HIGH>;
++			default-state = "off";
++		};
++
++		red {
++			label = "a20-olimex-som:red:usr";
++			gpios = <&pio 7 22 GPIO_ACTIVE_LOW>;
++			default-state = "on";
++		};
++	};
++
++	mmc2_pwrseq: mmc2_pwrseq {
++                compatible = "mmc-pwrseq-emmc";
++                reset-gpios = <&pio 2 16 GPIO_ACTIVE_LOW>;
++        };
++};
++
++&ahci {
++	target-supply = <&reg_ahci_5v>;
++	status = "okay";
++};
++
++&de {
++	status = "okay";
++};
++
++&ehci0 {
++	status = "okay";
++};
++
++&ehci1 {
++	status = "okay";
++};
++
++&cpu0 {
++	cpu-supply = <&reg_dcdc2>;
++};
++
++&codec {
++	status = "okay";
++};
++
++&gmac {
++	pinctrl-names = "default";
++	pinctrl-0 = <&gmac_rgmii_pins>;
++	phy = <&phy1>;
++	phy-mode = "rgmii";
++	status = "okay";
++
++	phy1: ethernet-phy@1 {
++		reg = <1>;
++	};
++};
++
++&i2c0 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&i2c0_pins>;
++	status = "okay";
++
++	axp209: pmic@34 {
++		reg = <0x34>;
++		interrupt-parent = <&nmi_intc>;
++		interrupts = <0 IRQ_TYPE_LEVEL_LOW>;
++	};
++};
++
++&i2c1 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&i2c1_pins>;
++	status = "okay";
++};
++
++&i2c2 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&i2c2_pins>;
++	status = "okay";
++};
++
++&mmc0 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&mmc0_pins>;
++	vmmc-supply = <&reg_vcc3v3>;
++	bus-width = <4>;
++	cd-gpios = <&pio 7 1 GPIO_ACTIVE_LOW>; /* PH1 */
++	status = "okay";
++};
++
++&mmc2 {
++        pinctrl-names = "default";
++        pinctrl-0 = <&mmc2_pins>;
++        vmmc-supply = <&reg_vcc3v3>;
++        mmc-pwrseq = <&mmc2_pwrseq>;
++        bus-width = <4>;
++        non-removable;
++        status = "okay";
++
++        emmc: emmc@0 {
++                reg = <0>;
++                compatible = "mmc-card";
++                broken-hpi;
++        };
++};
++
++&ohci0 {
++	status = "okay";
++};
++
++&ohci1 {
++	status = "okay";
++};
++
++&otg_sram {
++	status = "okay";
++};
++
++&pio {
++	ahci_pwr_pin_olimex_som: ahci_pwr_pin@1 {
++		pins = "PC3";
++		function = "gpio_out";
++	};
++
++	led_pins_olimex_som: led_pins@0 {
++		pins = "PH2", "PH22", "PH23";
++		function = "gpio_out";
++		drive-strength = <20>;
++	};
++
++	usb0_id_detect_pin: usb0_id_detect_pin@0 {
++		pins = "PH4";
++		function = "gpio_in";
++	};
++
++	usb0_vbus_detect_pin: usb0_vbus_detect_pin@0 {
++		pins = "PH5";
++		function = "gpio_in";
++	};
++};
++
++&reg_ahci_5v {
++	pinctrl-0 = <&ahci_pwr_pin_olimex_som>;
++	gpio = <&pio 2 3 GPIO_ACTIVE_HIGH>;
++	status = "okay";
++};
++
++#include "axp209.dtsi"
++
++&reg_dcdc2 {
++	regulator-always-on;
++	regulator-min-microvolt = <1000000>;
++	regulator-max-microvolt = <1400000>;
++	regulator-name = "vdd-cpu";
++};
++
++&reg_dcdc3 {
++	regulator-always-on;
++	regulator-min-microvolt = <1000000>;
++	regulator-max-microvolt = <1400000>;
++	regulator-name = "vdd-int-dll";
++};
++
++&reg_ldo1 {
++	regulator-name = "vdd-rtc";
++};
++
++&reg_ldo2 {
++	regulator-always-on;
++	regulator-min-microvolt = <3000000>;
++	regulator-max-microvolt = <3000000>;
++	regulator-name = "avcc";
++};
++
++&reg_usb0_vbus {
++	status = "okay";
++};
++
++&reg_usb1_vbus {
++	status = "okay";
++};
++
++&reg_usb2_vbus {
++	status = "okay";
++};
++
++&spi1 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&spi1_pi_pins>,
++		    <&spi1_cs0_pi_pin>;
++	status = "okay";
++};
++
++&spi2 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&spi2_pc_pins>,
++		    <&spi2_cs0_pc_pin>;
++	status = "okay";
++};
++
++&uart0 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&uart0_pb_pins>;
++	status = "okay";
++};
++
++&uart2 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&uart2_pi_pins>,
++            <&uart2_cts_rts_pi_pins>;
++	status = "okay";
++};
++
++&uart3 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&uart3_pg_pins>,
++            <&uart3_cts_rts_pg_pins>;
++	status = "okay";
++};
++
++&uart7 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&uart7_pi_pins>;
++	status = "okay";
++};
++
++&usbphy {
++	pinctrl-names = "default";
++	pinctrl-0 = <&usb0_id_detect_pin>, <&usb0_vbus_detect_pin>;
++	usb0_id_det-gpios = <&pio 7 4 GPIO_ACTIVE_HIGH>; /* PH04 */
++	usb0_vbus_det-gpios = <&pio 7 5 GPIO_ACTIVE_HIGH>; /* PH05 */
++	usb0_vbus-supply = <&reg_usb0_vbus>;
++	usb1_vbus-supply = <&reg_usb1_vbus>;
++	usb2_vbus-supply = <&reg_usb2_vbus>;
++	status = "okay";
++};
+diff --git a/configs/A20-Olimex-SOM-negotica_defconfig b/configs/A20-Olimex-SOM-negotica_defconfig
+new file mode 100644
+index 0000000000..e82c44154b
+--- /dev/null
++++ b/configs/A20-Olimex-SOM-negotica_defconfig
+@@ -0,0 +1,28 @@
++CONFIG_ARM=y
++CONFIG_ARCH_SUNXI=y
++CONFIG_SPL=y
++CONFIG_MACH_SUN7I=y
++CONFIG_DRAM_CLK=384
++CONFIG_MMC0_CD_PIN="PH1"
++CONFIG_MMC_SUNXI_SLOT_EXTRA=2
++CONFIG_USB0_VBUS_PIN="PB9"
++CONFIG_USB0_VBUS_DET="PH5"
++CONFIG_SATAPWR="PC3"
++CONFIG_AHCI=y
++CONFIG_NR_DRAM_BANKS=1
++# CONFIG_SYS_MALLOC_CLEAR_ON_INIT is not set
++CONFIG_SPL_I2C_SUPPORT=y
++# CONFIG_CMD_FLASH is not set
++# CONFIG_SPL_DOS_PARTITION is not set
++# CONFIG_SPL_EFI_PARTITION is not set
++CONFIG_DEFAULT_DEVICE_TREE="sun7i-a20-olimex-som-negotica"
++CONFIG_SCSI_AHCI=y
++CONFIG_ETH_DESIGNWARE=y
++CONFIG_RGMII=y
++CONFIG_MII=y
++CONFIG_SUN7I_GMAC=y
++# CONFIG_AXP_ALDO3_VOLT=2800
++CONFIG_AXP_ALDO4_VOLT=2800
++CONFIG_SCSI=y
++CONFIG_USB_EHCI_HCD=y
++CONFIG_SYS_USB_EVENT_POLL_VIA_INT_QUEUE=y

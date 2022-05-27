@@ -1,0 +1,454 @@
+diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
+index b21b3a646..10de9c8ba 100644
+--- a/arch/arm/boot/dts/Makefile
++++ b/arch/arm/boot/dts/Makefile
+@@ -1062,6 +1062,7 @@ dtb-$(CONFIG_MACH_SUN7I) += \
+ 	sun7i-a20-m3.dtb \
+ 	sun7i-a20-mk808c.dtb \
+ 	sun7i-a20-olimex-som-evb.dtb \
++	sun7i-a20-olimex-som-negotica.dtb \
+ 	sun7i-a20-olimex-som-evb-emmc.dtb \
+ 	sun7i-a20-olimex-som204-evb.dtb \
+ 	sun7i-a20-olimex-som204-evb-emmc.dtb \
+diff --git a/arch/arm/boot/dts/sun7i-a20-olimex-som-negotica.dts b/arch/arm/boot/dts/sun7i-a20-olimex-som-negotica.dts
+new file mode 100644
+index 000000000..7d97a8296
+--- /dev/null
++++ b/arch/arm/boot/dts/sun7i-a20-olimex-som-negotica.dts
+@@ -0,0 +1,269 @@
++/dts-v1/;
++#include "sun7i-a20.dtsi"
++#include "sunxi-common-regulators.dtsi"
++
++#include <dt-bindings/gpio/gpio.h>
++#include <dt-bindings/input/input.h>
++#include <dt-bindings/interrupt-controller/irq.h>
++
++/ {
++	model = "Olimex A20-Olimex-SOM Negotica";
++	compatible = "olimex,a20-olimex-som", "allwinner,sun7i-a20";
++
++	aliases {
++		serial0 = &uart0;
++	};
++
++	chosen {
++		stdout-path = "serial0:115200n8";
++	};
++
++	led2 {
++		compatible = "gpio-leds";
++		pinctrl-names = "default";
++		pinctrl-0 = <&led_pins_olimex_som>;
++
++		sys {
++			label = "a20-olimex-som:sys:usr";
++			gpios = <&pio 7 2 GPIO_ACTIVE_HIGH>;
++			default-state = "off";
++			linux,default-trigger = "heartbeat";
++		};
++
++		green {
++			label = "a20-olimex-som:green:usr";
++			gpios = <&pio 7 23 GPIO_ACTIVE_HIGH>;
++			default-state = "off";
++		};
++
++		red {
++			label = "a20-olimex-som:red:usr";
++			gpios = <&pio 7 22 GPIO_ACTIVE_LOW>;
++			default-state = "on";
++		};
++	};
++
++	mmc2_pwrseq: mmc2_pwrseq {
++                compatible = "mmc-pwrseq-emmc";
++                reset-gpios = <&pio 2 16 GPIO_ACTIVE_LOW>;
++        };
++};
++
++&ahci {
++	target-supply = <&reg_ahci_5v>;
++	status = "okay";
++};
++
++&de {
++	status = "okay";
++};
++
++&ehci0 {
++	status = "okay";
++};
++
++&ehci1 {
++	status = "okay";
++};
++
++&cpu0 {
++	cpu-supply = <&reg_dcdc2>;
++};
++
++&codec {
++	status = "okay";
++};
++
++&gmac {
++	pinctrl-names = "default";
++	pinctrl-0 = <&gmac_rgmii_pins>;
++	phy-handle = <&phy1>;
++	phy-mode = "rgmii";
++	status = "okay";
++};
++
++&gmac_mdio {
++	phy1: ethernet-phy@1 {
++		reg = <1>;
++	};
++};
++
++&i2c0 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&i2c0_pins>;
++	status = "okay";
++
++	axp209: pmic@34 {
++		reg = <0x34>;
++		interrupt-parent = <&nmi_intc>;
++		interrupts = <0 IRQ_TYPE_LEVEL_LOW>;
++	};
++};
++
++&i2c1 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&i2c1_pins>;
++	status = "okay";
++};
++
++&i2c2 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&i2c2_pins>;
++	status = "okay";
++};
++
++&mmc0 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&mmc0_pins>;
++	vmmc-supply = <&reg_vcc3v3>;
++	bus-width = <4>;
++	cd-gpios = <&pio 7 1 GPIO_ACTIVE_LOW>; /* PH1 */
++	status = "okay";
++};
++
++&mmc2 {
++        pinctrl-names = "default";
++        pinctrl-0 = <&mmc2_pins>;
++        vmmc-supply = <&reg_vcc3v3>;
++        mmc-pwrseq = <&mmc2_pwrseq>;
++        bus-width = <4>;
++        non-removable;
++        status = "okay";
++
++        emmc: emmc@0 {
++                reg = <0>;
++                compatible = "mmc-card";
++                broken-hpi;
++        };
++};
++
++&ohci0 {
++	status = "okay";
++};
++
++&ohci1 {
++	status = "okay";
++};
++
++&otg_sram {
++	status = "okay";
++};
++
++&pio {
++	ahci_pwr_pin_olimex_som: ahci_pwr_pin@1 {
++		pins = "PC3";
++		function = "gpio_out";
++	};
++
++	led_pins_olimex_som: led_pins@0 {
++		pins = "PH2", "PH22", "PH23";
++		function = "gpio_out";
++		drive-strength = <20>;
++	};
++
++	usb0_id_detect_pin: usb0_id_detect_pin@0 {
++		pins = "PH4";
++		function = "gpio_in";
++	};
++
++	usb0_vbus_detect_pin: usb0_vbus_detect_pin@0 {
++		pins = "PH5";
++		function = "gpio_in";
++	};
++};
++
++&reg_ahci_5v {
++	pinctrl-0 = <&ahci_pwr_pin_olimex_som>;
++	gpio = <&pio 2 3 GPIO_ACTIVE_HIGH>;
++	status = "okay";
++};
++
++#include "axp209.dtsi"
++
++&reg_dcdc2 {
++	regulator-always-on;
++	regulator-min-microvolt = <1000000>;
++	regulator-max-microvolt = <1400000>;
++	regulator-name = "vdd-cpu";
++};
++
++&reg_dcdc3 {
++	regulator-always-on;
++	regulator-min-microvolt = <1000000>;
++	regulator-max-microvolt = <1400000>;
++	regulator-name = "vdd-int-dll";
++};
++
++&reg_ldo1 {
++	regulator-name = "vdd-rtc";
++};
++
++&reg_ldo2 {
++	regulator-always-on;
++	regulator-min-microvolt = <3000000>;
++	regulator-max-microvolt = <3000000>;
++	regulator-name = "avcc";
++};
++
++&reg_usb0_vbus {
++	status = "okay";
++};
++
++&reg_usb1_vbus {
++	status = "okay";
++};
++
++&reg_usb2_vbus {
++	status = "okay";
++};
++
++&spi1 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&spi1_pi_pins>,
++		    <&spi1_cs0_pi_pin>;
++	status = "okay";
++};
++
++&spi2 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&spi2_pc_pins>,
++		    <&spi2_cs0_pc_pin>;
++	status = "okay";
++};
++
++&uart0 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&uart0_pb_pins>;
++	status = "okay";
++};
++
++&uart2 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&uart2_pi_pins>,
++            <&uart2_cts_rts_pi_pins>;
++	status = "okay";
++};
++
++&uart3 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&uart3_pg_pins>,
++            <&uart3_cts_rts_pg_pins>;
++	status = "okay";
++};
++
++&uart7 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&uart7_pi_pins>;
++	status = "okay";
++};
++
++&usbphy {
++	pinctrl-names = "default";
++	pinctrl-0 = <&usb0_id_detect_pin>, <&usb0_vbus_detect_pin>;
++	usb0_id_det-gpios = <&pio 7 4 GPIO_ACTIVE_HIGH>; /* PH04 */
++	usb0_vbus_det-gpios = <&pio 7 5 GPIO_ACTIVE_HIGH>; /* PH05 */
++	usb0_vbus-supply = <&reg_usb0_vbus>;
++	usb1_vbus-supply = <&reg_usb1_vbus>;
++	usb2_vbus-supply = <&reg_usb2_vbus>;
++	status = "okay";
++};
+diff --git a/arch/arm/configs/negotica_defconfig b/arch/arm/configs/negotica_defconfig
+new file mode 100644
+index 000000000..3314a72b1
+--- /dev/null
++++ b/arch/arm/configs/negotica_defconfig
+@@ -0,0 +1,161 @@
++CONFIG_NO_HZ=y
++CONFIG_HIGH_RES_TIMERS=y
++CONFIG_CGROUPS=y
++CONFIG_BLK_DEV_INITRD=y
++CONFIG_PERF_EVENTS=y
++CONFIG_MODULES=y
++CONFIG_MODULE_UNLOAD=y
++CONFIG_ARCH_SUNXI=y
++CONFIG_SMP=y
++CONFIG_NR_CPUS=8
++CONFIG_AEABI=y
++CONFIG_HIGHMEM=y
++CONFIG_CMA=y
++CONFIG_ARM_APPENDED_DTB=y
++CONFIG_ARM_ATAG_DTB_COMPAT=y
++CONFIG_CPU_FREQ=y
++CONFIG_CPUFREQ_DT=y
++CONFIG_VFP=y
++CONFIG_NEON=y
++CONFIG_NET=y
++CONFIG_PACKET=y
++CONFIG_UNIX=y
++CONFIG_INET=y
++CONFIG_IP_PNP=y
++CONFIG_IP_PNP_DHCP=y
++CONFIG_IP_PNP_BOOTP=y
++# CONFIG_INET_XFRM_MODE_TRANSPORT is not set
++# CONFIG_INET_XFRM_MODE_TUNNEL is not set
++# CONFIG_INET_XFRM_MODE_BEET is not set
++# CONFIG_INET_DIAG is not set
++# CONFIG_IPV6 is not set
++CONFIG_CAN=y
++CONFIG_CAN_SUN4I=y
++# CONFIG_WIRELESS is not set
++CONFIG_DEVTMPFS=y
++CONFIG_DEVTMPFS_MOUNT=y
++CONFIG_DMA_CMA=y
++CONFIG_BLK_DEV_SD=y
++CONFIG_ATA=y
++CONFIG_AHCI_SUNXI=y
++CONFIG_NETDEVICES=y
++CONFIG_SUN4I_EMAC=y
++# CONFIG_NET_VENDOR_ARC is not set
++# CONFIG_NET_CADENCE is not set
++# CONFIG_NET_VENDOR_BROADCOM is not set
++# CONFIG_NET_VENDOR_CIRRUS is not set
++# CONFIG_NET_VENDOR_FARADAY is not set
++# CONFIG_NET_VENDOR_INTEL is not set
++# CONFIG_NET_VENDOR_MARVELL is not set
++# CONFIG_NET_VENDOR_MICREL is not set
++# CONFIG_NET_VENDOR_MICROCHIP is not set
++# CONFIG_NET_VENDOR_NATSEMI is not set
++# CONFIG_NET_VENDOR_SAMSUNG is not set
++# CONFIG_NET_VENDOR_SEEQ is not set
++# CONFIG_NET_VENDOR_SMSC is not set
++CONFIG_STMMAC_ETH=y
++# CONFIG_NET_VENDOR_VIA is not set
++# CONFIG_NET_VENDOR_WIZNET is not set
++# CONFIG_WLAN is not set
++CONFIG_INPUT_EVDEV=y
++CONFIG_KEYBOARD_SUN4I_LRADC=y
++# CONFIG_INPUT_MOUSE is not set
++CONFIG_INPUT_TOUCHSCREEN=y
++CONFIG_TOUCHSCREEN_SUN4I=y
++CONFIG_INPUT_MISC=y
++CONFIG_INPUT_AXP20X_PEK=y
++CONFIG_SERIAL_8250=y
++CONFIG_SERIAL_8250_CONSOLE=y
++CONFIG_SERIAL_8250_NR_UARTS=8
++CONFIG_SERIAL_8250_RUNTIME_UARTS=8
++CONFIG_SERIAL_8250_DW=y
++CONFIG_SERIAL_OF_PLATFORM=y
++# CONFIG_HW_RANDOM is not set
++CONFIG_I2C_CHARDEV=y
++CONFIG_I2C_MV64XXX=y
++CONFIG_I2C_SUN6I_P2WI=y
++CONFIG_SPI=y
++CONFIG_SPI_SUN4I=y
++CONFIG_SPI_SUN6I=y
++CONFIG_GPIO_SYSFS=y
++CONFIG_POWER_SUPPLY=y
++CONFIG_CHARGER_AXP20X=y
++CONFIG_BATTERY_AXP20X=y
++CONFIG_AXP20X_POWER=y
++CONFIG_THERMAL=y
++CONFIG_CPU_THERMAL=y
++CONFIG_WATCHDOG=y
++CONFIG_SUNXI_WATCHDOG=y
++CONFIG_MFD_AC100=y
++CONFIG_MFD_AXP20X_I2C=y
++CONFIG_MFD_AXP20X_RSB=y
++CONFIG_REGULATOR=y
++CONFIG_REGULATOR_FIXED_VOLTAGE=y
++CONFIG_REGULATOR_AXP20X=y
++CONFIG_REGULATOR_GPIO=y
++CONFIG_MEDIA_SUPPORT=y
++CONFIG_RC_CORE=y
++CONFIG_RC_DEVICES=y
++CONFIG_IR_SUNXI=y
++CONFIG_DRM=y
++CONFIG_DRM_SUN4I=y
++CONFIG_DRM_DUMB_VGA_DAC=y
++CONFIG_FB_SIMPLE=y
++CONFIG_SOUND=y
++CONFIG_SND=y
++CONFIG_SND_SOC=y
++CONFIG_SND_SUN4I_CODEC=y
++CONFIG_USB=y
++CONFIG_USB_EHCI_HCD=y
++CONFIG_USB_EHCI_HCD_PLATFORM=y
++CONFIG_USB_OHCI_HCD=y
++CONFIG_USB_OHCI_HCD_PLATFORM=y
++CONFIG_USB_MUSB_HDRC=y
++CONFIG_USB_MUSB_SUNXI=y
++CONFIG_NOP_USB_XCEIV=y
++CONFIG_USB_GADGET=y
++CONFIG_MMC=y
++CONFIG_MMC_SUNXI=y
++CONFIG_NEW_LEDS=y
++CONFIG_LEDS_CLASS=y
++CONFIG_LEDS_GPIO=y
++CONFIG_LEDS_TRIGGERS=y
++CONFIG_LEDS_TRIGGER_HEARTBEAT=y
++CONFIG_LEDS_TRIGGER_DEFAULT_ON=y
++CONFIG_RTC_CLASS=y
++# CONFIG_RTC_INTF_SYSFS is not set
++# CONFIG_RTC_INTF_PROC is not set
++CONFIG_RTC_DRV_AC100=y
++CONFIG_RTC_DRV_SUNXI=y
++CONFIG_DMADEVICES=y
++CONFIG_DMA_SUN6I=y
++# CONFIG_IOMMU_SUPPORT is not set
++CONFIG_EXTCON=y
++CONFIG_IIO=y
++CONFIG_AXP20X_ADC=y
++CONFIG_PWM=y
++CONFIG_PWM_SUN4I=y
++CONFIG_PHY_SUN4I_USB=y
++CONFIG_PHY_SUN9I_USB=y
++CONFIG_NVMEM=y
++CONFIG_NVMEM_SUNXI_SID=y
++CONFIG_EXT4_FS=y
++CONFIG_VFAT_FS=y
++CONFIG_TMPFS=y
++CONFIG_NFS_FS=y
++CONFIG_NFS_V3_ACL=y
++CONFIG_NFS_V4=y
++CONFIG_ROOT_NFS=y
++CONFIG_NLS_CODEPAGE_437=y
++CONFIG_NLS_ISO8859_1=y
++CONFIG_PRINTK_TIME=y
++CONFIG_DEBUG_FS=y
++CONFIG_CRYPTO_DEV_SUN4I_SS=y
++
++CONFIG_TUN=y
++CONFIG_HIDRAW=y
++CONFIG_USB_HIDDEV=y
++CONFIG_USB_SERIAL=y
++CONFIG_USB_SERIAL_CP210X=y
++CONFIG_USB_SERIAL_FTDI_SIO=y
++CONFIG_USB_SERIAL_PL2303=y
